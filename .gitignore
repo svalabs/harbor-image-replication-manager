@@ -1,0 +1,9 @@
+# Demo files
+*.txt
+
+# Python files
+__pycache__
+*.py[co]
+
+# Dev env
+venv
