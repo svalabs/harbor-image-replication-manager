@@ -488,7 +488,7 @@ class HarborClient:
             elements.extend(response.json())
             next_page = get_next_page()
 
-        logger.debug(f"Received elements {len(elements)}: {elements!r}")
+        logger.debug("Received elements %d: %r", len(elements), elements)
         return elements
 
     def get_replication_policies(self):
