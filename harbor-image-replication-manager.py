@@ -277,7 +277,7 @@ class ReplicationPolicy:
             "name": self.name,
         }
 
-        harbor_client.create_replication_policy(self.name, data)
+        harbor_client.create_replication_policy(data)
 
         self._raw = harbor_client.get_replication_policy_json(self.name)
         self.tags = self._get_raw_tags()
@@ -503,7 +503,7 @@ class HarborClient:
         else:
             raise RuntimeError(f"No replication policy {name}")
 
-    def create_replication_policy(self, name, config):
+    def create_replication_policy(self, config):
         address = self.base_url + "api/v2.0/replication/policies/"
 
         response = self._session.post(address, auth=self._credentials, json=config)
