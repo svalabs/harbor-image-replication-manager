@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Copyright 2021: SVA System Vertrieb Alexander GmbH
-# Author: Niko Wenselowski<niko.wenselowski@sva.de>
+# Author: Niko Wenselowski <niko.wenselowski@sva.de>
 """
 Harbor Image Replication Manager
 """
@@ -84,7 +83,7 @@ def parse_cli():
     parser.add_argument('mode', choices=['create', 'delete'])
 
     harbor = parser.add_argument_group('Harbor', description="Configuration for the connection to Harbor")
-    harbor.add_argument('--harbor', dest="base_url", default="registry.labda.sva.de", help="Harbor address")
+    harbor.add_argument('--harbor', dest="base_url", required=True, help="Harbor address")
     harbor.add_argument('--insecure', action='store_false', dest='verify_cert', help="Do not verify server certificates")
     harbor.add_argument('--user', dest="username", required=True, help="Username to use")
     harbor.add_argument('--password', dest="password", required=True, help="Password to use")
