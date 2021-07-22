@@ -179,7 +179,7 @@ class HarborProject:
             "storage_limit": 0,
         }
 
-        harbor_client.create_project(self.name, data)
+        harbor_client.create_project(data)
 
         self._raw = harbor_client.get_project_json(self.name)
 
@@ -555,7 +555,7 @@ class HarborClient:
 
         return project
 
-    def create_project(self, name, config):
+    def create_project(self, config):
         address = self.base_url + "api/v2.0/projects"
 
         response = self._session.post(address, auth=self._credentials, json=config)
