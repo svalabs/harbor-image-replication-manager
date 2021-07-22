@@ -188,12 +188,12 @@ class HarborProject:
 
         if not harbor_client.is_project_deletable(self.name):
             harbor_client.remove_project_content(self.name)
-            logger.info(f"Triggered emptying of {self.name}")
+            logger.info("Triggered emptying of %s", self.name)
 
-        logger.info(f"Waiting for project {self.name} to be empty")
+        logger.info("Waiting for project %s to be empty", self.name)
         while not harbor_client.is_project_deletable(self.name):
             time.sleep(DELETION_SLEEP_TIME)
-            logger.debug(f"Project {self.name} still exists...")
+            logger.debug("Project %s still exists...", self.name)
 
         harbor_client.delete_project(self.name)
 
@@ -283,11 +283,11 @@ class ReplicationPolicy:
 
     def update_filters(self, harbor_client):
         raw_tags = self._get_raw_tags()
-        logger.debug(f"tags: {self.tags!r} (local) vs {raw_tags!r} (API)")
+        logger.debug("tags: %r (local) vs %r (API)", self.tags, raw_tags)
 
         if self.tags == raw_tags:
             # Filters match, no need for an update
-            logger.debug(f"Tag filters of {self.name} already set")
+            logger.debug("Tag filters of %s already set", self.name)
             return
 
         new_filters = [
@@ -352,39 +352,39 @@ class HarborManager:
         }
 
     def replicate_image(self, image, registry):
-        logger.debug(f"Attempting to replicate {image} from {registry['name']}")
+        logger.debug("Attempting to replicate %s from %s", image, registry['name'])
 
         project_name = image.namespace
         try:
             project = self._projects[project_name]
         except KeyError:
-            logger.debug(f"Creating project {project_name}")
+            logger.debug("Creating project %s", project_name)
             project = HarborProject(project_name)
             project.create(self._harbor_client)
             self._projects[project_name] = project
-            logger.info(f"Created project {project.name}")
+            logger.info("Created project %s", project.name)
 
         replication_rule_name = self.create_replication_rule_name(image)
         try:
             policy = self._replication_policies[replication_rule_name]
-            logger.debug(f"Tags for {policy.name}: {policy.tags}")
+            logger.debug("Tags for %s: %s", policy.name, policy.tags)
             policy.tags.add(image.tag)
             policy.update_filters(self._harbor_client)
         except KeyError:
-            logger.debug("policy %s does not exist" % replication_rule_name)
+            logger.debug("policy %s does not exist", replication_rule_name)
             policy = ReplicationPolicy(replication_rule_name)
             policy.create(self._harbor_client, project_name, image, registry)
             self._replication_policies[replication_rule_name] = policy
-            logger.info(f"Created policy {replication_rule_name}")
+            logger.info("Created policy %s", policy.name)
 
         if self._trigger_replication_rule:
             policy.trigger_execution(self._harbor_client)
-            logger.info(f"Triggered execution of policy {policy.name}")
+            logger.info("Triggered execution of policy %s", policy.name)
 
-        logger.info(f"Replication of {image} has been created")
+        logger.info("Replication of %s has been created", image)
 
     def remove_image_replication(self, image, delete_projects):
-        logger.debug(f"Attempting to remove replication for {image}")
+        logger.debug("Attempting to remove replication for %s", image)
 
         replication_rule_name = self.create_replication_rule_name(image)
         try:
@@ -398,23 +398,23 @@ class HarborManager:
                 policy.update_filters(self._harbor_client)
             else:  # no tags - delete rule
                 policy.delete(self._harbor_client)
-                logger.info(f"Removed policy {policy.name}")
+                logger.info("Removed policy %s", policy.name)
                 del self._replication_policies[replication_rule_name]
         except KeyError:
-            logger.debug("policy %s does not exist" % replication_rule_name)
+            logger.debug("policy %s does not exist", replication_rule_name)
 
         if delete_projects:
             project_name = image.namespace
             try:
                 project = self._projects[project_name]
                 project.delete(self._harbor_client)
-                logger.info(f"Removed project {project_name}")
+                logger.info("Removed project %s", project_name)
                 del self._projects[project_name]
             except KeyError as kerr:
-                logger.debug(f"Received key error: {kerr}")
-                logger.debug(f"Project {project_name!r} does not exist")
+                logger.debug("Received key error: %s", kerr)
+                logger.debug("Project %r does not exist", project_name)
 
-        logger.info(f"Removed replication of {image}")
+        logger.info("Removed replication of %s", image)
 
     def create_replication_rule_name(self, image):
         rule_name = f"{image.namespace}-{image.name}"
@@ -441,9 +441,9 @@ class HarborClient:
         try:
             response.raise_for_status()
         except Exception as err:
-            logger.debug(f"Request failed: {err}")
-            logger.debug(f"Response headers: {response.headers}")
-            logger.debug(f"Response body: {response.json()}")
+            logger.debug("Request failed: %s", err)
+            logger.debug("Response headers: %s", response.headers)
+            logger.debug("Response body: %s", response.json())
             raise
 
         csrf_token = response.headers.get("X-Harbor-Csrf-Token")
@@ -510,7 +510,7 @@ class HarborClient:
             response.raise_for_status()
         except Exception:
             logger.debug("Creating a replication policy failed.")
-            logger.debug(f"Response headers: {response.headers}")
+            logger.debug("Response headers: %s", response.headers)
             raise
 
     def update_replication_policy(self, policy_id, config):
@@ -521,7 +521,7 @@ class HarborClient:
             response.raise_for_status()
         except Exception:
             logger.debug("Updating a replication policy failed.")
-            logger.debug(f"Response headers: {response.headers}")
+            logger.debug("Response headers: %s", response.headers)
             raise
 
     def delete_replication_policy(self, id):
@@ -538,8 +538,8 @@ class HarborClient:
         try:
             response.raise_for_status()
         except Exception:
-            logger.debug(f"Triggering replication for rule #{id} failed.")
-            logger.debug(f"Headers: {response.headers}")
+            logger.debug("Triggering replication for rule #%s failed.", id)
+            logger.debug("Headers: %s", response.headers)
             raise
 
     def get_projects(self):
@@ -558,8 +558,8 @@ class HarborClient:
         address = self.base_url + "api/v2.0/projects"
 
         response = self._session.post(address, auth=self._credentials, json=config)
-        logger.debug(f"Response headers: {response.headers}")
-        logger.debug(f"Response body: {response.content}")
+        logger.debug("Response headers: %s", response.headers)
+        logger.debug("Response body: %s", response.content)
         response.raise_for_status()
 
         try:
@@ -569,7 +569,7 @@ class HarborClient:
 
     def is_project_deletable(self, name_or_id):
         response = self.get(f"api/v2.0/projects/{name_or_id}/_deletable")
-        logger.debug(f"Deletable for {name_or_id}: {response}")
+        logger.debug("Deletable for %s: %s", name_or_id, response)
 
         try:
             return response["deletable"]
@@ -585,7 +585,7 @@ class HarborClient:
         repos = self.get(f"api/v2.0/projects/{name}/repositories")
 
         for repo in repos:
-            logger.debug(f"Repo: {repo!r}")
+            logger.debug("Repo: %r", repo)
             repo_name = repo["name"]
 
             name_prefix = name + "/"
@@ -596,12 +596,12 @@ class HarborClient:
                 # Double URL encoded
                 repo_name = quote(quote(repo_name, safe=""))
 
-            logger.debug(f"Deleting repository {repo_name} in {name}")
+            logger.debug("Deleting repository %s in %s", repo_name, name)
             address = (
                 self.base_url + f"api/v2.0/projects/{name}/repositories/{repo_name}"
             )
             response = self._session.delete(address, auth=self._credentials)
-            logger.debug(f"Response headers: {response.headers}")
+            logger.debug("Response headers: %s", response.headers)
             response.raise_for_status()
 
     def delete_project(self, name_or_id):
@@ -620,7 +620,7 @@ class HarborClient:
             if registry_name == name:
                 return registry
 
-        logger.info("Available registries: {}".format(", ".join(registry_names)))
+        logger.info("Available registries: %s", ", ".join(registry_names))
 
         raise ValueError(f"No registry {name!r} found")
 
