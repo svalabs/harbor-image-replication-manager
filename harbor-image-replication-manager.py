@@ -23,12 +23,12 @@ import argparse
 import json
 import logging
 import time
-import urllib3
 from collections import namedtuple
 from functools import partial
 from urllib.parse import quote
 
 import requests
+import urllib3
 from requests.auth import HTTPBasicAuth
 
 __version__ = "1.0.0"
