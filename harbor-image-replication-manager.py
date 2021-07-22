@@ -23,6 +23,7 @@ import argparse
 import json
 import logging
 import time
+import urllib3
 from collections import namedtuple
 from functools import partial
 from urllib.parse import quote
@@ -47,8 +48,6 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     if not options.verify_cert:
-        import urllib3
-
         urllib3.disable_warnings()
 
     h = HarborClient(
