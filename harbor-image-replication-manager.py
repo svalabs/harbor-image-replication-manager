@@ -589,8 +589,9 @@ class HarborClient:
             logger.debug(f"Repo: {repo!r}")
             repo_name = repo["name"]
 
-            if repo_name.startswith(name + "/"):
-                repo_name = repo_name[len(name) + 1 :]
+            name_prefix = name + "/"
+            if repo_name.startswith(name_prefix):
+                repo_name = repo_name[len(name_prefix) :]
 
             if "/" in repo_name:
                 # Double URL encoded
