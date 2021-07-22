@@ -504,7 +504,7 @@ class HarborClient:
             raise RuntimeError(f"No replication policy {name}")
 
     def create_replication_policy(self, name, config):
-        address = self.base_url + f"api/v2.0/replication/policies/"
+        address = self.base_url + "api/v2.0/replication/policies/"
 
         response = self._session.post(address, auth=self._credentials, json=config)
         try:
@@ -531,7 +531,7 @@ class HarborClient:
         response.raise_for_status()
 
     def trigger_replication_policy_execution(self, id):
-        address = self.base_url + f"api/v2.0/replication/executions/"
+        address = self.base_url + "api/v2.0/replication/executions/"
 
         response = self._session.post(
             address, auth=self._credentials, json={"policy_id": id}
